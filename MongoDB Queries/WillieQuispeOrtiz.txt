@@ -1,0 +1,36 @@
+
+/* 1. Enlaza la colección Subjects con Teachers. Esto nos va ayudar a que los profesores esten asignados a sus cursos correctamente y se tenga acceso a los datos correctos*/
+db.Teachers.aggregate([
+{
+   $lookup:
+      {
+         from: "Subjects",
+         localField: "SubjectsId",
+         foreignField: "_id",
+         as: "Cursos"
+      }
+}]);
+
+
+/*  2. Nos ayuda a saber que profesores están asignados a los cursos. Asi, podremos saber si hay profesores que dictan 2 cursos*/
+db.Teachers.aggregate([{
+    $project: {
+        "FirstName": 1 ,
+        "LastName":  1,
+        "Cursos": { $size: "$SubjectsId" }
+    }
+}]);
+
+
+/* 3. Muestra los estudiantes que tiene una nota desaprobatoria por cada curso */
+db.Grades.aggregate([
+{
+    $project: {
+        StudentId: 1,
+        SubjectId: 1,
+        Score: -1,
+        Pass: {
+            $gt: ["$Score", 12]
+        }
+    }
+}]);
